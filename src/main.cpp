@@ -19,7 +19,7 @@ CRGB leds[NUM_LEDS];
 #define DMXSTART 463
 
 // number of DMX channels used
-#define DMXLENGTH 4
+#define DMXLENGTH 3
 
 byte r,g,b;
 CRGB currentColor=CRGB::DarkBlue;
@@ -71,7 +71,11 @@ void setup() {
     // FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);  // BGR ordering is typical
 }
 
-const byte amount=32;
+const int delay_between_blinks=6000;
+
+
+const byte amount=32;//the leds of the ring will fade from bright (color controlled by DMX) to black in steps of 32. 
+const int delay_between_blink_steps=8;//total duration of blink, including fade, is 128*(this setting). 8*128=1024 milliseconds
 
 long lastBlink=millis();
 
@@ -91,7 +95,7 @@ void loop() {
     FastLED.show();
     delay(20);
   }*/
-  if(millis()-lastBlink>6000){
+  if(millis()-lastBlink>delay_between_blinks){
     lastBlink=millis();
     for (int i = 0; i < 128; i++){
       leds[7].fadeToBlackBy(amount);
