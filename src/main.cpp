@@ -16,7 +16,7 @@
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 // first DMX channel
-#define DMXSTART 463
+#define DMXSTART 463 //463
 // number of DMX channels used
 #define DMXLENGTH 3
 
@@ -25,7 +25,7 @@ CRGB currentColor=CRGB::DarkBlue;
 
 void setup() { 
   DMXSerial.init(DMXProbe);
-  DMXSerial.maxChannel(DMXLENGTH); // after 3 channels, the onUpdate will be called when new data arrived.
+  DMXSerial.maxChannel(DMXSTART+DMXLENGTH); // after 3 channels, the onUpdate will be called when new data arrived.
 
     // Uncomment/edit one of the following lines for your leds arrangement.
     // ## Clockless types ##
@@ -125,7 +125,7 @@ void loop() {
       }
       FastLED.show();
       delay(8);
-      receiveDMXcolor();
+      //receiveDMXcolor();
     }
   }
 
