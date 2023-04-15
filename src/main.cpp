@@ -12,12 +12,11 @@
 #define DATA_PIN 5
 //#define CLOCK_PIN 13
 
+
 // Define the array of leds
 CRGB leds[NUM_LEDS];
-
-// first DMX start address
+// first DMX channel
 #define DMXSTART 463
-
 // number of DMX channels used
 #define DMXLENGTH 3
 
@@ -71,6 +70,15 @@ void setup() {
     // FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);  // BGR ordering is typical
 }
 
+void receiveDMXcolor(){
+  if (DMXSerial.receive()) {
+    r = DMXSerial.read(DMXSTART+0);
+    g = DMXSerial.read(DMXSTART+1);
+    b = DMXSerial.read(DMXSTART+2);
+    currentColor=CRGB( r, g, b);
+  } 
+}
+
 const int delay_between_blinks=6000;
 
 
@@ -84,17 +92,10 @@ void loop() {
   // Turn the LED on, then pause
   for (int i = 0; i < NUM_LEDS; i++)
     leds[i] = currentColor;
-  //leds[(current+NUM_LEDS/2)%NUM_LEDS] = CRGB::SeaGreen;
   FastLED.show();
-  //delay(6000);
   
-  /*for (int i = 0; i < 100; i++){
-    fadeToBlackBy(leds, NUM_LEDS,16);
-    leds[3] = CRGB::DarkBlue;
-    leds[11] = CRGB::DarkBlue;
-    FastLED.show();
-    delay(20);
-  }*/
+  //fade the leds out, starting on top and bottom of the ring
+  //this implementation is fixed for a ledring of 16 leds
   if(millis()-lastBlink>delay_between_blinks){
     lastBlink=millis();
     for (int i = 0; i < 128; i++){
@@ -124,16 +125,9 @@ void loop() {
       }
       FastLED.show();
       delay(8);
+      receiveDMXcolor();
     }
   }
 
-  if (DMXSerial.receive()) {
-    r = DMXSerial.read(1);
-    g = DMXSerial.read(2);
-    b = DMXSerial.read(3);
-    currentColor=CRGB( r, g, b);
-    /*for (int i = 0; i < NUM_LEDS; i++) {
-      leds[i] = currentColor;
-    }*/
-  } 
+  receiveDMXcolor();
 }
