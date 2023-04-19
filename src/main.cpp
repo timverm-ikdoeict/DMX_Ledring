@@ -85,6 +85,33 @@ const int delay_between_blinks=6000;
 const byte amount=32;//the leds of the ring will fade from bright (color controlled by DMX) to black in steps of 32. 
 const int delay_between_blink_steps=8;//total duration of blink, including fade, is 128*(this setting). 8*128=1024 milliseconds
 
+const byte amount_of_blink_steps=128;
+const byte dim_speed=10;
+
+/*
+* Take one step in opening or closing the eye. 
+* 
+* In the first part, the eye is closing, in the second part the eye is opening. De pending on the parameters, the eye can stay closed for a period of time. 
+* The closing of the eye starts by fading the most upper and lower leds, fading more leds over time towards the center (horizontal) leds. 
+* Opening of the eye is in reverse order.  
+*/
+void blinkStep(byte step){
+  byte relativeLedNumber;
+  int dimValue;
+  for (int i = 0; i < NUM_LEDS; i++){
+    //calculate the number of leds per quadrant: NUM_LEDS/4
+    //the relative led number is an index for the led, independant of the quadrant
+    relativeLedNumber=NUM_LEDS/4-abs((i+1)%(NUM_LEDS/2)-NUM_LEDS/4);
+    //the dim value is a pulsewaveform with sloped edges
+    dimValue=(abs(step-amount_of_blink_steps/2+1)-amount_of_blink_steps/2+(relativeLedNumber+1)*dim_speed);
+    dimValue=constrain(dimValue,0,dim_speed);
+    dimValue=map(dimValue,0,dim_speed, 0, 255);
+
+    leds[i]=currentColor.scale8(dimValue);
+  }
+}
+
+
 long lastBlink=millis();
 
 void loop() { 
@@ -95,36 +122,12 @@ void loop() {
   FastLED.show();
   
   //fade the leds out, starting on top and bottom of the ring
-  //this implementation is fixed for a ledring of 16 leds
   if(millis()-lastBlink>delay_between_blinks){
     lastBlink=millis();
-    for (int i = 0; i < 128; i++){
-      leds[7].fadeToBlackBy(amount);
-      leds[15].fadeToBlackBy(amount);
-      if(i>8){
-        leds[6].fadeToBlackBy(amount);
-        leds[8].fadeToBlackBy(amount);
-        leds[0].fadeToBlackBy(amount);
-        leds[14].fadeToBlackBy(amount);
-      }
-      if(i>16){
-        leds[5].fadeToBlackBy(amount);
-        leds[9].fadeToBlackBy(amount);
-        leds[1].fadeToBlackBy(amount);
-        leds[13].fadeToBlackBy(amount);
-      }
-      if(i>24){
-        leds[4].fadeToBlackBy(amount);
-        leds[10].fadeToBlackBy(amount);
-        leds[2].fadeToBlackBy(amount);
-        leds[12].fadeToBlackBy(amount);
-      }
-      if(i>32){
-        leds[3].fadeToBlackBy(amount);
-        leds[11].fadeToBlackBy(amount);
-      }
+    for (int i = 0; i < amount_of_blink_steps; i++){
+      blinkStep(i);
       FastLED.show();
-      delay(8);
+      delay(delay_between_blink_steps);
       //receiveDMXcolor();
     }
   }
